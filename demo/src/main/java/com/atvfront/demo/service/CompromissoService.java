@@ -1,3 +1,4 @@
+// Verifique se o seu service está IDENTICO a este.
 package com.atvfront.demo.service;
 
 import com.atvfront.demo.model.CategoriaModel;
@@ -8,7 +9,6 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 
 import java.util.List;
 import java.util.Optional;
@@ -32,11 +32,9 @@ public class CompromissoService {
 
     @Transactional
     public CompromissoModel salvar(CompromissoModel compromisso) {
-        // Valida se a categoria informada existe
         Long categoriaId = compromisso.getCategoria().getId();
         CategoriaModel categoria = categoriaRepository.findById(categoriaId)
                 .orElseThrow(() -> new EntityNotFoundException("Categoria com ID " + categoriaId + " não encontrada."));
-
         compromisso.setCategoria(categoria);
         return compromissoRepository.save(compromisso);
     }
@@ -63,9 +61,5 @@ public class CompromissoService {
             throw new EntityNotFoundException("Compromisso com ID " + id + " não encontrado.");
         }
         compromissoRepository.deleteById(id);
-    }
-
-    public boolean existePorId(Long id) {
-        return compromissoRepository.existsById(id);
     }
 }
