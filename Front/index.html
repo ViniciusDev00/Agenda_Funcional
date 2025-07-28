@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Agenda Profissional</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>📅 Minha Agenda</h1>
+
+      <section class="form-section">
+        <h2>Adicionar / Editar Compromisso</h2>
+        <form id="agenda-form">
+          <input type="hidden" id="index-edicao" />
+          <input type="text" id="titulo" placeholder="Título" required />
+          <input type="date" id="data" required />
+          <input type="time" id="hora" required />
+          <textarea
+            id="descricao"
+            placeholder="Descrição (opcional)"
+          ></textarea>
+          <div class="form-buttons">
+            <button type="submit" class="btn primary">Salvar</button>
+            <button
+              type="button"
+              id="cancelar-edicao"
+              class="btn danger"
+              style="display: none"
+            >
+              Cancelar
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <section class="filtros">
+        <input type="date" id="filtro-data" />
+        <button class="btn" onclick="filtrarPorData()">Filtrar</button>
+        <button class="btn" onclick="limparFiltro()">Limpar Filtro</button>
+      </section>
+
+      <section>
+        <h2>Compromissos</h2>
+        <ul id="lista-compromissos"></ul>
+      </section>
+    </div>
+
+    <div id="popup" class="popup"></div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
