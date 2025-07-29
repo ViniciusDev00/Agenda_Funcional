@@ -8,7 +8,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-
 import java.util.List;
 
 @RestController
@@ -32,13 +31,9 @@ public class CompromissoController {
     }
 
     @PostMapping
-    public ResponseEntity<?> criarCompromisso(@RequestBody CompromissoModel compromisso) {
-        try {
-            CompromissoModel novoCompromisso = compromissoService.salvar(compromisso);
-            return new ResponseEntity<>(novoCompromisso, HttpStatus.CREATED);
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public ResponseEntity<CompromissoModel> criarCompromisso(@RequestBody CompromissoModel compromisso) {
+        CompromissoModel novoCompromisso = compromissoService.salvar(compromisso);
+        return new ResponseEntity<>(novoCompromisso, HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
