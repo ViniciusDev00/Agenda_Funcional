@@ -1,7 +1,6 @@
 package com.atvfront.demo.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -29,12 +28,6 @@ public class CompromissoModel {
     private LocalDate data;
 
     @Column(nullable = false)
-    @JsonFormat(pattern = "HH:mm:ss") // Formato com segundos
+    @JsonFormat(pattern = "HH:mm:ss")
     private LocalTime hora;
-
-    // Muitos compromissos pertencem a uma categoria
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "categoria_id", nullable = false)
-    @JsonIgnoreProperties("compromissos") // Evita recursão infinita
-    private CategoriaModel categoria;
 }
