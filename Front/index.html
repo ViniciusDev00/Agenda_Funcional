@@ -1,58 +1,75 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-  <head>
+<head>
     <meta charset="UTF-8" />
-    <title>Agenda Simples</title>
+    <title>Agenda de Compromissos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <div class="container">
-      <h1>Minha Agenda</h1>
-
-      <!-- Formulário para adicionar compromissos -->
-      <div class="formulario">
-        <h2>Adicionar Compromisso</h2>
-        <form id="agenda-form">
-          <input type="hidden" id="index-edicao" />
-
-          <label>Título:</label>
-          <input type="text" id="titulo" required />
-
-          <label>Data:</label>
-          <input type="date" id="data" required />
-
-          <label>Hora:</label>
-          <input type="time" id="hora" required />
-
-          <label>Descrição (opcional):</label>
-          <textarea id="descricao"></textarea>
-
-          <div class="botoes">
-            <button type="button" id="cancelar" class="botao-cancelar">
-              Cancelar
-            </button>
-            <button type="submit" class="botao-salvar">Salvar</button>
-          </div>
-        </form>
-      </div>
-
-      <!-- Filtros -->
-      <div class="filtros">
-        <h2>Filtrar</h2>
-        <input type="date" id="filtro-data" />
-        <button onclick="filtrar()" class="botao-filtrar">Filtrar</button>
-        <button onclick="limparFiltro()" class="botao-limpar">
-          Mostrar Todos
-        </button>
-      </div>
-
-      <!-- Lista de compromissos -->
-      <div class="compromissos">
-        <h2>Meus Compromissos</h2>
-        <div id="lista-compromissos"></div>
-      </div>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+</head>
+<body>
+    <div class="background-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
     </div>
 
+    <div id="loading-overlay" class="hidden">
+        <div class="spinner"></div>
+    </div>
+    <div id="toast-container"></div>
+
+    <main class="container">
+        <header>
+            <h1><i class="fas fa-calendar-check"></i> Agenda de Compromissos</h1>
+        </header>
+
+        <div class="grid-container">
+            <section class="coluna-formularios">
+                <div class="card-form" id="compromisso-form-card">
+                    <h2 id="form-compromisso-titulo">Novo Compromisso</h2>
+                    <form id="compromisso-form">
+                        <input type="hidden" id="compromisso-id" />
+
+                        <div class="input-wrapper">
+                            <label for="descricao">Descrição</label>
+                            <input type="text" id="descricao" placeholder="Ex: Reunião de projeto" required />
+                        </div>
+
+                        <div class="input-group">
+                            <div class="input-wrapper">
+                                <label for="data">Data</label>
+                                <input type="date" id="data" required />
+                            </div>
+                            <div class="input-wrapper">
+                                <label for="hora">Hora</label>
+                                <input type="time" id="hora" required />
+                            </div>
+                        </div>
+
+                        <div class="botoes">
+                            <button type="button" id="btn-cancelar" class="botao-secundario hidden">
+                                <i class="fas fa-times"></i> Cancelar
+                            </button>
+                            <button type="submit" class="botao-principal">
+                                <i class="fas fa-save"></i> Salvar Compromisso
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <section class="coluna-compromissos">
+                <h2><i class="fas fa-list-ul"></i> Próximos Eventos</h2>
+                <div id="lista-compromissos">
+                    <p class="placeholder-text">Sua agenda está vazia.</p>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="script.js"></script>
-  </body>
+</body>
 </html>
