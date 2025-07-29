@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Agenda Simples</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>Minha Agenda</h1>
+
+      <!-- Formulário para adicionar compromissos -->
+      <div class="formulario">
+        <h2>Adicionar Compromisso</h2>
+        <form id="agenda-form">
+          <input type="hidden" id="index-edicao" />
+
+          <label>Título:</label>
+          <input type="text" id="titulo" required />
+
+          <label>Data:</label>
+          <input type="date" id="data" required />
+
+          <label>Hora:</label>
+          <input type="time" id="hora" required />
+
+          <label>Descrição (opcional):</label>
+          <textarea id="descricao"></textarea>
+
+          <div class="botoes">
+            <button type="button" id="cancelar" class="botao-cancelar">
+              Cancelar
+            </button>
+            <button type="submit" class="botao-salvar">Salvar</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Filtros -->
+      <div class="filtros">
+        <h2>Filtrar</h2>
+        <input type="date" id="filtro-data" />
+        <button onclick="filtrar()" class="botao-filtrar">Filtrar</button>
+        <button onclick="limparFiltro()" class="botao-limpar">
+          Mostrar Todos
+        </button>
+      </div>
+
+      <!-- Lista de compromissos -->
+      <div class="compromissos">
+        <h2>Meus Compromissos</h2>
+        <div id="lista-compromissos"></div>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
