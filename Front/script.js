@@ -1,142 +1,148 @@
-// Variáveis globais
-let compromissos = [];
-let editando = false;
-let indiceEditando = null;
-
-// Quando a página carregar
-document.addEventListener("DOMContentLoaded", function () {
-  // Carregar compromissos salvos
-  carregarCompromissos();
-
-  // Configurar o formulário
-  document
-    .getElementById("agenda-form")
-    .addEventListener("submit", salvarCompromisso);
-
-  // Configurar botão cancelar
-  document.getElementById("cancelar").addEventListener("click", cancelarEdicao);
+// =================================
+// CONFIGURAÇÃO
+// =================================
+const api = axios.create({
+    baseURL: "http://localhost:8080/api"
 });
 
-// Função para carregar compromissos do localStorage
-function carregarCompromissos() {
-  const salvos = localStorage.getItem("compromissos");
-  if (salvos) {
-    compromissos = JSON.parse(salvos);
-  }
-  mostrarCompromissos();
-}
+// Elementos do DOM
+const compromissoForm = document.getElementById("compromisso-form");
+const listaCompromissos = document.getElementById("lista-compromissos");
+const loadingOverlay = document.getElementById("loading-overlay");
+const formCompromissoTitulo = document.getElementById("form-compromisso-titulo");
+const btnCancelar = document.getElementById("btn-cancelar");
 
-// Função para salvar compromissos no localStorage
-function salvarNaMemoria() {
-  localStorage.setItem("compromissos", JSON.stringify(compromissos));
-}
+// =================================
+// FUNÇÕES DE UTILIDADE
+// =================================
+const showLoading = (show) => loadingOverlay.classList.toggle('hidden', !show);
+const showToast = (message, type = 'sucesso') => {
+    const toastContainer = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.textContent = message;
+    toastContainer.appendChild(toast);
+    setTimeout(() => toast.remove(), 4000);
+};
 
-// Função para salvar um novo compromisso ou editar existente
-function salvarCompromisso(event) {
-  event.preventDefault();
+// =================================
+// FUNÇÕES DE RENDERIZAÇÃO
+// =================================
+const renderizarCompromissos = (compromissos) => {
+    listaCompromissos.innerHTML = '';
+    if (compromissos.length === 0) {
+        listaCompromissos.innerHTML = '<p class="placeholder-text">Sua agenda está vazia.</p>';
+        return;
+    }
+    compromissos.forEach(c => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'compromisso-item';
+        itemDiv.innerHTML = `
+            <h3>${c.descricao}</h3>
+            <div class="compromisso-info">
+                <span><i class="fas fa-calendar-day"></i> ${new Date(c.data + 'T00:00:00').toLocaleDateString()}</span>
+                <span><i class="fas fa-clock"></i> ${c.hora.substring(0, 5)}</span>
+            </div>
+            <div class="compromisso-acoes">
+                <button class="botao-editar" onclick="prepararEdicaoCompromisso(${c.id})"><i class="fas fa-pencil-alt"></i></button>
+                <button class="botao-excluir" onclick="excluirCompromisso(${c.id})"><i class="fas fa-trash"></i></button>
+            </div>
+        `;
+        listaCompromissos.appendChild(itemDiv);
+    });
+};
 
-  // Pegar valores do formulário
-  const titulo = document.getElementById("titulo").value;
-  const data = document.getElementById("data").value;
-  const hora = document.getElementById("hora").value;
-  const descricao = document.getElementById("descricao").value;
+// =================================
+// FUNÇÕES DE API
+// =================================
+const carregarDadosIniciais = async () => {
+    showLoading(true);
+    try {
+        const response = await api.get('/compromissos');
+        renderizarCompromissos(response.data);
+    } catch (error) {
+        console.error("Erro ao carregar dados:", error);
+        showToast(`Falha ao carregar dados: ${error.message}`, "erro");
+    } finally {
+        showLoading(false);
+    }
+};
 
-  if (editando) {
-    // Editar compromisso existente
-    compromissos[indiceEditando] = { titulo, data, hora, descricao };
-    alert("Compromisso atualizado com sucesso!");
-  } else {
-    // Adicionar novo compromisso
-    compromissos.push({ titulo, data, hora, descricao });
-    alert("Compromisso adicionado com sucesso!");
-  }
+const salvarCompromisso = async (event) => {
+    event.preventDefault();
+    const id = document.getElementById('compromisso-id').value;
+    const compromisso = {
+        descricao: document.getElementById('descricao').value,
+        data: document.getElementById('data').value,
+        hora: document.getElementById('hora').value + ":00",
+    };
+    const isEditing = !!id;
+    showLoading(true);
+    try {
+        if (isEditing) {
+            await api.put(`/compromissos/${id}`, compromisso);
+        } else {
+            await api.post('/compromissos', compromisso);
+        }
+        showToast(`Compromisso ${isEditing ? 'atualizado' : 'salvo'} com sucesso!`);
+        resetarFormularioCompromisso();
+        await carregarDadosIniciais();
+    } catch (error) {
+        console.error("Erro ao salvar compromisso:", error);
+        const errorMessage = error.response?.data || error.message;
+        showToast(`Erro: ${errorMessage}`, "erro");
+    } finally {
+        showLoading(false);
+    }
+};
 
-  // Salvar e atualizar
-  salvarNaMemoria();
-  mostrarCompromissos();
-  limparFormulario();
-}
+const prepararEdicaoCompromisso = async (id) => {
+    showLoading(true);
+    try {
+        const response = await api.get(`/compromissos/${id}`);
+        const c = response.data;
+        document.getElementById('compromisso-id').value = c.id;
+        document.getElementById('descricao').value = c.descricao;
+        document.getElementById('data').value = c.data;
+        document.getElementById('hora').value = c.hora.substring(0, 5);
+        formCompromissoTitulo.textContent = "Editar Compromisso";
+        btnCancelar.classList.remove('hidden');
+        document.getElementById('compromisso-form-card').scrollIntoView({ behavior: 'smooth' });
+    } catch (error) {
+        console.error("Erro ao buscar compromisso para edição:", error);
+        showToast("Falha ao carregar dados para edição.", "erro");
+    } finally {
+        showLoading(false);
+    }
+};
 
-// Função para mostrar todos os compromissos na tela
-function mostrarCompromissos(filtroData = null) {
-  const lista = document.getElementById("lista-compromissos");
-  lista.innerHTML = "";
+const excluirCompromisso = async (id) => {
+    if (!confirm("Tem certeza que deseja excluir este compromisso?")) return;
+    showLoading(true);
+    try {
+        await api.delete(`/compromissos/${id}`);
+        showToast("Compromisso excluído com sucesso!");
+        await carregarDadosIniciais();
+    } catch (error) {
+        console.error("Erro ao excluir compromisso:", error);
+        const errorMessage = error.response?.data || error.message;
+        showToast(`Erro: ${errorMessage}`, "erro");
+    } finally {
+        showLoading(false);
+    }
+};
 
-  // Filtrar se necessário
-  const compromissosParaMostrar = filtroData
-    ? compromissos.filter((c) => c.data === filtroData)
-    : compromissos;
+// =================================
+// MANIPULADORES DE EVENTOS
+// =================================
+const resetarFormularioCompromisso = () => {
+    compromissoForm.reset();
+    document.getElementById('compromisso-id').value = '';
+    formCompromissoTitulo.textContent = "Adicionar Compromisso";
+    btnCancelar.classList.add('hidden');
+};
 
-  // Adicionar cada compromisso à lista
-  compromissosParaMostrar.forEach((compromisso, index) => {
-    const div = document.createElement("div");
-    div.className = "compromisso";
-    div.innerHTML = `
-      <h3>${compromisso.titulo}</h3>
-      <div class="data">${compromisso.data} às ${compromisso.hora}</div>
-      <div class="descricao">${compromisso.descricao || "Sem descrição"}</div>
-      <div class="acoes">
-        <button class="editar" onclick="editarCompromisso(${index})">Editar</button>
-        <button class="excluir" onclick="excluirCompromisso(${index})">Excluir</button>
-      </div>
-    `;
-    lista.appendChild(div);
-  });
-}
+compromissoForm.addEventListener('submit', salvarCompromisso);
+btnCancelar.addEventListener('click', resetarFormularioCompromisso);
 
-// Função para editar um compromisso
-function editarCompromisso(index) {
-  const compromisso = compromissos[index];
-
-  // Preencher formulário
-  document.getElementById("titulo").value = compromisso.titulo;
-  document.getElementById("data").value = compromisso.data;
-  document.getElementById("hora").value = compromisso.hora;
-  document.getElementById("descricao").value = compromisso.descricao;
-  document.getElementById("index-edicao").value = index;
-
-  // Modo edição
-  editando = true;
-  indiceEditando = index;
-  document.getElementById("cancelar").style.display = "inline-block";
-}
-
-// Função para excluir um compromisso
-function excluirCompromisso(index) {
-  if (confirm("Tem certeza que deseja excluir este compromisso?")) {
-    compromissos.splice(index, 1);
-    salvarNaMemoria();
-    mostrarCompromissos();
-    alert("Compromisso excluído!");
-  }
-}
-
-// Função para cancelar edição
-function cancelarEdicao() {
-  limparFormulario();
-  editando = false;
-  indiceEditando = null;
-  document.getElementById("cancelar").style.display = "none";
-}
-
-// Função para limpar o formulário
-function limparFormulario() {
-  document.getElementById("agenda-form").reset();
-  document.getElementById("index-edicao").value = "";
-}
-
-// Função para filtrar por data
-function filtrar() {
-  const data = document.getElementById("filtro-data").value;
-  if (data) {
-    mostrarCompromissos(data);
-  } else {
-    alert("Selecione uma data para filtrar");
-  }
-}
-
-// Função para limpar filtro
-function limparFiltro() {
-  document.getElementById("filtro-data").value = "";
-  mostrarCompromissos();
-}
+document.addEventListener('DOMContentLoaded', carregarDadosIniciais);
